@@ -1,19 +1,16 @@
-const express = require("express")
-const cors = require("cors")
-const port = process.env.PORT ||5001
-const app = express()
+const express = require("express");
+const cors = require("cors");
+const port = process.env.PORT || 5001;
+const app = express();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-require("dotenv").config()
-
+require("dotenv").config();
 
 //middleware
-app.use(cors())
-app.use(express.json())
-
+app.use(cors());
+app.use(express.json());
 
 // copied from mongoDBAtlas starts from here
-const uri =
-  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.toh0ohl.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.toh0ohl.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -66,13 +63,28 @@ async function run() {
       res.send(result);
     });
 
+    //updating the bookings
+    app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updateBooking = req.body;
+      console.log(updateBooking);
+      const updateDoc = {
+        $set: {
+          status: updateBooking.status,
+        },
+      };
+      const result = await bookingCollections.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
     //deleting item form myBookings cart
     app.delete("/bookings/:id", async (req, res) => {
-      const id = req.params.id
-      const query = { _id: new ObjectId(id) }
-      const result = await bookingCollections.deleteOne(query)
-      res.send(result)
-    })
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookingCollections.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -87,13 +99,11 @@ async function run() {
 run().catch(console.dir);
 // copied from mongoDBAtlas ends here
 
-
 //server testing
 app.get("/", (req, res) => {
-    res.send("Car Doctor server is running...");
-})
-
+  res.send("Car Doctor server is running...");
+});
 
 app.listen(port, () => {
-    console.log(`The Car Doctor Server is running on Port:  ${port}`)
-})
+  console.log(`The Car Doctor Server is running on Port:  ${port}`);
+});
