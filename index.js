@@ -4,6 +4,7 @@ const port = process.env.PORT || 5001;
 const app = express();
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 //middleware
@@ -14,6 +15,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
 // copied from mongoDBAtlas starts from here
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.toh0ohl.mongodb.net/?retryWrites=true&w=majority`;
@@ -27,6 +29,28 @@ const client = new MongoClient(uri, {
   },
 });
 
+// creating middleware
+const logger = async (req, res, next) => {
+  console.log("You're called: ", req.host, req.originalUrl);
+  next();
+};
+const verifyToken = async (req, res, next) => {
+  const token = req?.cookies?.token;
+  console.log("value of token in middleware", token);
+  if (!token) {
+    return res.status(401).send({ message: "Unauthorized" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      console.log(err);
+      return res.status(401).send({ message: "Unauthorized" });
+    }
+    console.log("Value in the token", decoded);
+    req.user = decoded;
+    next();
+  });
+};
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -37,11 +61,11 @@ async function run() {
     const bookingCollections = client.db("Car-Doctor").collection("Bookings");
 
     //auth related api
-    app.post("/jwt", async (req, res) => {
+    app.post("/jwt", logger, async (req, res) => {
       const user = req.body;
       console.log("the user is: ", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "5h",
       });
       res
         .cookie("token", token, {
@@ -52,7 +76,7 @@ async function run() {
     });
 
     //getting services collection
-    app.get("/services", async (req, res) => {
+    app.get("/services", logger, async (req, res) => {
       const cursor = serviceCollections.find();
       const result = await cursor.toArray();
       res.send(result);
@@ -67,7 +91,12 @@ async function run() {
     });
 
     //getting all bookings for the client side
-    app.get("/bookings", async (req, res) => {
+    app.get("/bookings", logger, verifyToken, async (req, res) => {
+      // console.log("tok tok token", req.cookies.token);
+      // console.log("user in the valid token", req.user);
+      if (req.query.email !== req.user.email) {
+        return res.status(403).send({message:"Forbidden Access"})
+      }
       let query = {};
       if (req.query?.email) {
         query = { email: req.query?.email };
@@ -79,7 +108,6 @@ async function run() {
     // storing all of bookings
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
-      // console.log("my books", booking);
       const result = await bookingCollections.insertOne(booking);
       res.send(result);
     });
