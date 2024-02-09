@@ -2,11 +2,17 @@ const express = require("express");
 const cors = require("cors");
 const port = process.env.PORT || 5001;
 const app = express();
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 //middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // copied from mongoDBAtlas starts from here
@@ -29,6 +35,21 @@ async function run() {
     //   db-collections
     const serviceCollections = client.db("Car-Doctor").collection("Services");
     const bookingCollections = client.db("Car-Doctor").collection("Bookings");
+
+    //auth related api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log("the user is: ", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: false,
+        })
+        .send({ success: true });
+    });
 
     //getting services collection
     app.get("/services", async (req, res) => {
@@ -58,7 +79,7 @@ async function run() {
     // storing all of bookings
     app.post("/bookings", async (req, res) => {
       const booking = req.body;
-      console.log(booking);
+      // console.log("my books", booking);
       const result = await bookingCollections.insertOne(booking);
       res.send(result);
     });
@@ -68,7 +89,7 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateBooking = req.body;
-      console.log(updateBooking);
+      // console.log(updateBooking);
       const updateDoc = {
         $set: {
           status: updateBooking.status,
