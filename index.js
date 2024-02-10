@@ -29,11 +29,13 @@ const client = new MongoClient(uri, {
   },
 });
 
-// creating middleware
+// middleware for checking log in or not
 const logger = async (req, res, next) => {
   console.log("You're called: ", req.host, req.originalUrl);
   next();
 };
+
+//middleware for verifying jwt token
 const verifyToken = async (req, res, next) => {
   const token = req?.cookies?.token;
   console.log("value of token in middleware", token);
@@ -75,6 +77,12 @@ async function run() {
         .send({ success: true });
     });
 
+    app.post("/logout", async (req, res) => {
+      const user = req.body;
+      console.log("logged out", user)
+      res.clearCookie("token", {maxAge:0}).send({ success: true });
+    });
+
     //getting services collection
     app.get("/services", logger, async (req, res) => {
       const cursor = serviceCollections.find();
@@ -94,8 +102,9 @@ async function run() {
     app.get("/bookings", logger, verifyToken, async (req, res) => {
       // console.log("tok tok token", req.cookies.token);
       // console.log("user in the valid token", req.user);
+      // console.log("cook cook cookies", req.cookies )
       if (req.query.email !== req.user.email) {
-        return res.status(403).send({message:"Forbidden Access"})
+        return res.status(403).send({ message: "Forbidden Access" });
       }
       let query = {};
       if (req.query?.email) {
