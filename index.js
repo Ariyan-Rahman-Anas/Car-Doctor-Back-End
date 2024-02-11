@@ -21,7 +21,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 
 const corsOptions = {
-  origin: "https://your-car-doctor.netlify.app",
+  // origin: "https://your-car-doctor.netlify.app",
+  origin: "http://localhost:5173",
   credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   // optionsSuccessStatus: 204,
