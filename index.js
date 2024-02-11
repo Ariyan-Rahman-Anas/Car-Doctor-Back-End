@@ -10,7 +10,10 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 //middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      // "http://localhost:5173",
+      "https://your-car-doctor.netlify.app"
+    ],
     credentials: true,
   })
 );
@@ -56,7 +59,7 @@ const verifyToken = async (req, res, next) => {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     //   db-collections
     const serviceCollections = client.db("Car-Doctor").collection("Services");
