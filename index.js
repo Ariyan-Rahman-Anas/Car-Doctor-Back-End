@@ -87,7 +87,7 @@ async function run() {
     });
 
     //getting services collection
-    app.get("/services", logger, async (req, res) => {
+    app.get("/services", async (req, res) => {
       const cursor = serviceCollections.find();
       const result = await cursor.toArray();
       res.send(result);
