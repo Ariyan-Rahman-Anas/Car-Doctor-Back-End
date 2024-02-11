@@ -8,28 +8,25 @@ const cookieParser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 //middleware
-// app.use(
-//   cors({
-//     origin: [
-//       // "http://localhost:5173",
-//       "https://your-car-doctor.netlify.app"
-//     ],
-//     credentials: true,
-//   })
-// );
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://your-car-doctor.netlify.app"
+    ],
+    credentials: true,
+  })
+);
 
-
-
-const corsOptions = {
-  // origin: "https://your-car-doctor.netlify.app",
-  origin: "http://localhost:5173",
-  credentials: true,
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  // optionsSuccessStatus: 204,
-  optionsSuccessStatus: 200,
-  allowedHeaders: "Content-Type,Authorization",
-};
-app.use(cors(corsOptions));
+// const corsOptions = {
+//   // origin: "https://your-car-doctor.netlify.app",
+//   origin: "http://localhost:5173",
+//   credentials: true,
+//   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+//   optionsSuccessStatus: 200,
+//   allowedHeaders: "Content-Type,Authorization",
+// };
+// app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
