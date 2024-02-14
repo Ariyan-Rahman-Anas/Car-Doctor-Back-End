@@ -30,6 +30,11 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// app.use(express.json());
+// app.use(bodyParser.json({ limit: "500mb" }));
+// app.use(bodyParser.urlencoded({ extended: true, limit: "500mb" }));
+// app.use(cookieParser());
+
 // copied from mongoDBAtlas starts from here
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.toh0ohl.mongodb.net/?retryWrites=true&w=majority`;
 
