@@ -19,7 +19,7 @@ app.use(
 );
 
 // const corsOptions = {
-//   // origin: "https://your-car-doctor.netlify.app",
+  // origin: "https://your-car-doctor.netlify.app",
 //   origin: "http://localhost:5173",
 //   credentials: true,
 //   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -27,6 +27,7 @@ app.use(
 //   allowedHeaders: "Content-Type,Authorization",
 // };
 // app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(cookieParser());
 
