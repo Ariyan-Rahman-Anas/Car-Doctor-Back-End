@@ -80,6 +80,7 @@ async function run() {
     //   db-collections
     const serviceCollections = client.db("Car-Doctor").collection("Services");
     const bookingCollections = client.db("Car-Doctor").collection("Bookings");
+    const reviewCollections = client.db("Car-Doctor").collection("Reviews");
 
     //auth related api
     app.post("/jwt", logger, async (req, res) => {
@@ -93,13 +94,22 @@ async function run() {
           httpOnly: true,
           secure: false,
         })
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
         .send({ success: true });
+        
     });
 
     app.post("/logout", async (req, res) => {
       const user = req.body;
       console.log("logged out", user)
-      res.clearCookie("token", {maxAge:0}).send({ success: true });
+      res
+        .clearCookie("token", { maxAge: 0, sameSite: "none", secure: true })
+        .send({ success: true });
+      // res.clearCookie("token", {maxAge:0}).send({ success: true });
     });
 
     //getting services collection
@@ -162,6 +172,19 @@ async function run() {
       const result = await bookingCollections.deleteOne(query);
       res.send(result);
     });
+
+    //getting all reviews
+    app.get("/reviews", async (req, res) => {
+      const result = await reviewCollections.find().toArray()
+      res.send(result)
+    } )
+
+    //storing reviews
+    app.post("/reviews", async (req, res) => {
+      const review = req.body
+      const result = await reviewCollections.insertOne(review)
+      res.send(result)
+    })
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
