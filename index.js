@@ -186,10 +186,16 @@ async function run() {
       res.send(result);
     });
 
+    //getting all blogs
+    app.get("/blogs", async (req, res) => {
+      const result = await blogCollections.find().toArray();
+      res.send(result);
+    });
+
     //storing blogs
     app.post("/blogs", async (req, res) => {
-      const review = req.body;
-      const result = await blogCollections.insertOne(review);
+      const blog = req.body;
+      const result = await blogCollections.insertOne(blog);
       res.send(result);
     });
 
