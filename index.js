@@ -192,6 +192,14 @@ async function run() {
       res.send(result);
     });
 
+    //getting blog details
+    app.get("/blogs/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await blogCollections.findOne(query);
+      res.send(result);
+    });
+
     //storing blogs
     app.post("/blogs", async (req, res) => {
       const blog = req.body;
