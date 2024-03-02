@@ -82,6 +82,9 @@ async function run() {
     const bookingCollections = client.db("Car-Doctor").collection("Bookings");
     const reviewCollections = client.db("Car-Doctor").collection("Reviews");
     const blogCollections = client.db("Car-Doctor").collection("Blogs");
+    const commentCollections = client
+      .db("Car-Doctor")
+      .collection("BlogComments");
 
     //auth related api
     app.post("/jwt", logger, async (req, res) => {
@@ -204,6 +207,19 @@ async function run() {
     app.post("/blogs", async (req, res) => {
       const blog = req.body;
       const result = await blogCollections.insertOne(blog);
+      res.send(result);
+    });
+
+    //getting all blogs comments
+    // app.get("/blogComments", async (req, res) => {
+    //   const result = await commentCollections.find().toArray();
+    //   res.send(result);
+    // });
+
+    //storing blog comments
+    app.post("/blogComments", async (req, res) => {
+      const blogComment = req.body;
+      const result = await commentCollections.insertOne(blogComment);
       res.send(result);
     });
 
