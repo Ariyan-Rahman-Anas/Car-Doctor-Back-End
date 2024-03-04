@@ -210,14 +210,23 @@ async function run() {
       res.send(result);
     });
 
+
+    app.get("/blogComments", async (req, res) => {
+      const result = await commentCollections.find().toArray()
+      res.send(result)
+    })
+
     //getting all blogs comments
-    // app.get("/blogComments", async (req, res) => {
-    //   const result = await commentCollections.find().toArray();
-    //   res.send(result);
-    // });
+    app.get("/blogComments/:id", async (req, res) => {
+      const id = req.params.id;
+      console.log("id is:", id)
+      const cursor = { blogId: id};
+      const result = await commentCollections.find(cursor).toArray()
+      res.send(result);
+    });
 
     //storing blog comments
-    app.post("/blogComments", async (req, res) => {
+    app.post("/blogComments/:id", async (req, res) => {
       const blogComment = req.body;
       const result = await commentCollections.insertOne(blogComment);
       res.send(result);
