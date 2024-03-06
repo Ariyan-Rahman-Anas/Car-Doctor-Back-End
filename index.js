@@ -10,31 +10,12 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 //middleware
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://your-car-doctor.netlify.app"
-    ],
+    origin: ["http://localhost:5173", "https://your-car-doctor.netlify.app"],
     credentials: true,
   })
 );
-
-// const corsOptions = {
-  // origin: "https://your-car-doctor.netlify.app",
-//   origin: "http://localhost:5173",
-//   credentials: true,
-//   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-//   optionsSuccessStatus: 200,
-//   allowedHeaders: "Content-Type,Authorization",
-// };
-// app.use(cors(corsOptions));
-
 app.use(express.json());
 app.use(cookieParser());
-
-// app.use(express.json());
-// app.use(bodyParser.json({ limit: "500mb" }));
-// app.use(bodyParser.urlencoded({ extended: true, limit: "500mb" }));
-// app.use(cookieParser());
 
 // copied from mongoDBAtlas starts from here
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.toh0ohl.mongodb.net/?retryWrites=true&w=majority`;
@@ -117,9 +98,20 @@ async function run() {
 
     //getting services collection
     app.get("/services", async (req, res) => {
-      const cursor = serviceCollections.find();
-      const result = await cursor.toArray();
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+      const result = await serviceCollections
+        .find()
+        .skip(page * size)
+        .limit(size)
+        .toArray();
       res.send(result);
+    });
+
+    // getting total services for the pagination
+    app.get("/servicesCount", async (req, res) => {
+      const count = await serviceCollections.estimatedDocumentCount();
+      res.send({ count });
     });
 
     //getting service details for checkout page
@@ -210,18 +202,17 @@ async function run() {
       res.send(result);
     });
 
-
     app.get("/blogComments", async (req, res) => {
-      const result = await commentCollections.find().toArray()
-      res.send(result)
-    })
+      const result = await commentCollections.find().toArray();
+      res.send(result);
+    });
 
     //getting all blogs comments
     app.get("/blogComments/:id", async (req, res) => {
       const id = req.params.id;
-      console.log("id is:", id)
-      const cursor = { blogId: id};
-      const result = await commentCollections.find(cursor).toArray()
+      console.log("id is:", id);
+      const cursor = { blogId: id };
+      const result = await commentCollections.find(cursor).toArray();
       res.send(result);
     });
 
@@ -234,9 +225,9 @@ async function run() {
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
-    // console.log(
-    //   "Pinged your deployment. You successfully connected to MongoDB!"
-    // );
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
