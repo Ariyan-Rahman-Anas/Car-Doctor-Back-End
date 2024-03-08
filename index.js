@@ -60,6 +60,7 @@ async function run() {
 
     //   db-collections
     const serviceCollections = client.db("Car-Doctor").collection("Services");
+    const productCollections = client.db("Car-Doctor").collection("Products");
     const bookingCollections = client.db("Car-Doctor").collection("Bookings");
     const reviewCollections = client.db("Car-Doctor").collection("Reviews");
     const blogCollections = client.db("Car-Doctor").collection("Blogs");
@@ -94,6 +95,20 @@ async function run() {
         .clearCookie("token", { maxAge: 0, sameSite: "none", secure: true })
         .send({ success: true });
       // res.clearCookie("token", {maxAge:0}).send({ success: true });
+    });
+
+    //getting product collection
+    app.get("/products", async (req, res) => {
+      const result = await productCollections.find().toArray();
+      res.send(result);
+    });
+
+    //getting products details for checkout page
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollections.findOne(query);
+      res.send(result);
     });
 
     //getting services collection
