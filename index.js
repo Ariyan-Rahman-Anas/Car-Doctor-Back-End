@@ -40,12 +40,12 @@ const verifyToken = async (req, res, next) => {
   const token = req?.cookies?.token;
   console.log("value of token in middleware", token);
   if (!token) {
-    return res.status(401).send({ message: "Unauthorized" });
+    return res.status(401).send({ message: "You don't have a token" });
   }
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
       console.log(err);
-      return res.status(401).send({ message: "Unauthorized" });
+      return res.status(401).send({ message: "found a problem in your token" });
     }
     console.log("Value in the token", decoded);
     req.user = decoded;
@@ -61,6 +61,9 @@ async function run() {
     //   db-collections
     const serviceCollections = client.db("Car-Doctor").collection("Services");
     const productCollections = client.db("Car-Doctor").collection("Products");
+    const orderedProductCollections = client
+      .db("Car-Doctor")
+      .collection("OrderedProducts");
     const bookingCollections = client.db("Car-Doctor").collection("Bookings");
     const reviewCollections = client.db("Car-Doctor").collection("Reviews");
     const blogCollections = client.db("Car-Doctor").collection("Blogs");
@@ -76,10 +79,6 @@ async function run() {
         expiresIn: "5h",
       });
       res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: false,
-        })
         .cookie("token", token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
@@ -108,6 +107,13 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await productCollections.findOne(query);
+      res.send(result);
+    });
+
+    // storing all ordered products
+    app.post("/orderedProducts", async (req, res) => {
+      const product = req.body;
+      const result = await orderedProductCollections.insertOne(product);
       res.send(result);
     });
 
