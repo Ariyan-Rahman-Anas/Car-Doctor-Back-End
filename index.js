@@ -118,7 +118,15 @@ async function run() {
       }
       const result = await orderedProductCollections.find(query).toArray();
       res.send(result);
-    })
+    });
+
+    //deleting item form Cart
+    app.delete("/orderedProducts/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await orderedProductCollections.deleteOne(query);
+      res.send(result);
+    });
 
     // storing all ordered products
     app.post("/orderedProducts", async (req, res) => {
