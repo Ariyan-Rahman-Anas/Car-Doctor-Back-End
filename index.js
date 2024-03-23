@@ -31,27 +31,8 @@ const client = new MongoClient(uri, {
 
 // middleware for checking log in or not
 const logger = async (req, res, next) => {
-  console.log("You're called: ", req.host, req.originalUrl);
   next();
 };
-
-//middleware for verifying jwt token
-// const verifyToken = async (req, res, next) => {
-//   const token = req?.cookies?.token;
-//   console.log("value of token in middleware", token);
-//   if (!token) {
-//     return res.status(401).send({ message: "You don't have a token" });
-//   }
-//   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-//     if (err) {
-//       console.log(err);
-//       return res.status(401).send({ message: "found a problem in your token" });
-//     }
-//     console.log("Value in the token", decoded);
-//     req.user = decoded;
-//     next();
-//   });
-// };
 
 async function run() {
   try {
@@ -74,7 +55,6 @@ async function run() {
     //auth related api
     app.post("/jwt", logger, async (req, res) => {
       const user = req.body;
-      console.log("the user is: ", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "5h",
       });
@@ -89,11 +69,9 @@ async function run() {
 
     app.post("/logout", async (req, res) => {
       const user = req.body;
-      console.log("logged out", user);
       res
         .clearCookie("token", { maxAge: 0, sameSite: "none", secure: true })
         .send({ success: true });
-      // res.clearCookie("token", {maxAge:0}).send({ success: true });
     });
 
     //getting product collection
@@ -163,12 +141,6 @@ async function run() {
 
     //getting all bookings for the client side
     app.get("/bookings", async (req, res) => {
-      // console.log("tok tok token", req.cookies.token);
-      // console.log("user in the valid token", req.user);
-      // console.log("cook cook cookies", req.cookies )
-      // if (req.query.email !== req.user.email) {
-      //   return res.status(403).send({ message: "Forbidden Access" });
-      // }
       let query = {};
       if (req.query?.email) {
         query = { email: req.query?.email };
@@ -189,7 +161,6 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateBooking = req.body;
-      // console.log(updateBooking);
       const updateDoc = {
         $set: {
           status: updateBooking.status,
@@ -249,7 +220,6 @@ async function run() {
     //getting all blogs comments
     app.get("/blogComments/:id", async (req, res) => {
       const id = req.params.id;
-      console.log("id is:", id);
       const cursor = { blogId: id };
       const result = await commentCollections.find(cursor).toArray();
       res.send(result);
