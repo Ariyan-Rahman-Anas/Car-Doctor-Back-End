@@ -3,19 +3,11 @@ const cors = require("cors");
 const port = process.env.PORT || 5001;
 const app = express();
 require("dotenv").config();
-const jwt = require("jsonwebtoken");
-const cookieParser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 //middleware
-app.use(
-  cors({
-    origin: ["http://localhost:5173", "https://your-car-doctor.netlify.app"],
-    credentials: true,
-  })
-);
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
-app.use(cookieParser());
 
 // copied from mongoDBAtlas starts from here
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.toh0ohl.mongodb.net/?retryWrites=true&w=majority`;
@@ -29,16 +21,10 @@ const client = new MongoClient(uri, {
   },
 });
 
-// middleware for checking log in or not
-const logger = async (req, res, next) => {
-  next();
-};
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
-
     //   db-collections
     const serviceCollections = client.db("Car-Doctor").collection("Services");
     const productCollections = client.db("Car-Doctor").collection("Products");
@@ -51,28 +37,6 @@ async function run() {
     const commentCollections = client
       .db("Car-Doctor")
       .collection("BlogComments");
-
-    //auth related api
-    app.post("/jwt", logger, async (req, res) => {
-      const user = req.body;
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: "5h",
-      });
-      res
-        .cookie("token", token, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-        })
-        .send({ success: true });
-    });
-
-    app.post("/logout", async (req, res) => {
-      const user = req.body;
-      res
-        .clearCookie("token", { maxAge: 0, sameSite: "none", secure: true })
-        .send({ success: true });
-    });
 
     //getting product collection
     app.get("/products", async (req, res) => {
@@ -251,5 +215,7 @@ app.get("/", (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`The Car Doctor Server is running on Port:  ${port}`);
+  console.log(
+    `The Car Doctor Server is running on Port: http://localhost:${port}`
+  );
 });
